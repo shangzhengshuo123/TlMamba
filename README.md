@@ -21,5 +21,5 @@ python TSKD_train.py
 ### Evaluation
 python test.py 
 
-This code is directly associated with the manuscript submitted to The Visual Computer
-Please cite this paper
+### This code is directly associated with the manuscript submitted to The Visual Computer.
+### Please cite this paper.
