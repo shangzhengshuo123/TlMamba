@@ -21,5 +21,17 @@ python TSKD_train.py
 ### Evaluation
 python test.py 
 
-### This code is directly associated with the manuscript submitted to The Visual Computer.
-### Please cite this paper.
+## Citation
+
+If you use this code or data in your research, please cite the following paper:
+
+**"[TlMamba: Enhancing Ancient Tai Palm-Leaf Manuscript Character Recognition through Hybrid Vision Mamba Framework]"**, *The Visual Computer*
+
+```bibtex
+@article{,
+  title   = {TlMamba: Enhancing Ancient Tai Palm-Leaf Manuscript Character Recognition through Hybrid Vision Mamba Framework},
+  author  = {JingYing Zhao},
+  journal = {The Visual Computer},
+  year    = {2026}
+}
+
