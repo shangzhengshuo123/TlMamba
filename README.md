@@ -15,7 +15,7 @@ Recognizing handwritten characters in ancient Tai palm-leaf manuscripts poses si
 - pip install mamba_ssm==1.0.1  # mmamba_ssm-1.0.1+cu118torch1.13cxx11abiFALSE-cp38-cp38-linux_x86_64.whl
 - pip install scikit-learn matplotlib thop h5py SimpleITK scikit-image medpy yacs
 
-## Dataset Description
+## 3.Dataset Description
 
 The data are organized into training, validation, and test sets to ensure fair evaluation and reproducibility.
 
@@ -28,7 +28,7 @@ data/
 └─ test/
 
 
-## 3. Training and Evaluation
+## 4.Training and Evaluation
 ### Training
 python TSKD_train.py 
 ### Evaluation
