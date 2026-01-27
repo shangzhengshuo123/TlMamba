@@ -17,7 +17,7 @@ Recognizing handwritten characters in ancient Tai palm-leaf manuscripts poses si
 
 ## 3.Dataset Description
 
-The data are organized into training, validation, and test sets to ensure fair evaluation and reproducibility.
+The data are organized into training, validation, and test sets to ensure fair evaluation and reproducibility. The datasets generated and/or analyzed during the current study are not publicly available due to copyright restrictions associated with the font resources used in the study, but are available from the corresponding author on reasonable request.
 
 ### Directory Structure
 
