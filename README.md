@@ -26,6 +26,7 @@ data/
 ├─ train/
 ├─ val/
 └─ test/
+```
 
 
 ## 4.Training and Evaluation
