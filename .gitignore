@@ -1,0 +1,12 @@
+/百度网盘文件/
+/weights/*.pth
+/data/HLDLC1.0/train/**
+/data/HLDLC1.0/val/**
+/data/HLDLC1.0/test/**
+!/data/HLDLC1.0/train/.gitkeep
+!/data/HLDLC1.0/val/.gitkeep
+!/data/HLDLC1.0/test/.gitkeep
+__pycache__/
+*.py[cod]
+.idea/
+.vscode/

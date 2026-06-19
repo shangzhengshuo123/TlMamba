@@ -9,35 +9,19 @@ import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
 from einops import rearrange, repeat
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
-try:
-    from .SPE import SPE
-    from .SSD import SSD
-except ImportError:  # pragma: no cover - supports direct script execution.
-    from SPE import SPE
-    from SSD import SSD
+from PConv import Pinwheel_shapedConv
 
 try:
     from mamba_ssm.ops.selective_scan_interface import selective_scan_fn, selective_scan_ref
-except ImportError:
-    selective_scan_fn = None
-    selective_scan_ref = None
+except:
+    pass
 
 # an alternative for mamba_ssm (in which causal_conv1d is needed)
 try:
     from selective_scan import selective_scan_fn as selective_scan_fn_v1
     from selective_scan import selective_scan_ref as selective_scan_ref_v1
-except ImportError:
-    selective_scan_fn_v1 = None
-    selective_scan_ref_v1 = None
-
-
-def _require_selective_scan(fn, backend_name):
-    if fn is None:
-        raise ImportError(
-            f"{backend_name} is required by TlMamba. Install a CUDA/PyTorch-compatible "
-            "mamba_ssm or selective_scan package before training or evaluating TlMamba."
-        )
-    return fn
+except:
+    pass
 
 DropPath.__repr__ = lambda self: f"timm.DropPath({self.drop_prob})"
 
@@ -173,8 +157,10 @@ class PatchEmbed2D(nn.Module):
         super().__init__()
         if isinstance(patch_size, int):
             patch_size = (patch_size, patch_size)
-
-        self.proj = SPE(in_chans, embed_dim, k=patch_size[0], s=patch_size[0])
+        # 商注销
+        # self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=patch_size)
+        # 商加
+        self.proj = Pinwheel_shapedConv(in_chans, embed_dim, k=patch_size[0], s=patch_size[0])
         if norm_layer is not None:
             self.norm = norm_layer(embed_dim)
         else:
@@ -402,7 +388,7 @@ class SS2D(nn.Module):
         return D
 
     def forward_corev0(self, x: torch.Tensor):
-        self.selective_scan = _require_selective_scan(selective_scan_fn, "mamba_ssm selective_scan")
+        self.selective_scan = selective_scan_fn
 
         B, C, H, W = x.shape
         L = H * W
@@ -443,7 +429,7 @@ class SS2D(nn.Module):
 
     # an alternative to forward_corev1
     def forward_corev1(self, x: torch.Tensor):
-        self.selective_scan = _require_selective_scan(selective_scan_fn_v1, "selective_scan")
+        self.selective_scan = selective_scan_fn_v1
 
         B, C, H, W = x.shape
         L = H * W
@@ -532,21 +518,48 @@ class SS_Conv_SSM(nn.Module):
         self.self_attention = SS2D(d_model=hidden_dim // 2, dropout=attn_drop_rate, d_state=d_state, **kwargs)
         self.drop_path = DropPath(drop_path)
 
-        self.cf_block = SSD(
-            in_channels=hidden_dim // 2,
-            out_channels=hidden_dim // 2,
-            num_heads=4,
-            drop_rate=0.1
-            # drop_path_rate=drop_path
+        # 商注销
+        # self.conv33conv33conv11 = nn.Sequential(
+        #     nn.BatchNorm2d(hidden_dim // 2),
+        #     nn.Conv2d(in_channels=hidden_dim // 2, out_channels=hidden_dim // 2, kernel_size=3, stride=1, padding=1),
+        #     nn.BatchNorm2d(hidden_dim // 2),
+        #     nn.ReLU(),
+        #     nn.Conv2d(in_channels=hidden_dim // 2, out_channels=hidden_dim // 2, kernel_size=3, stride=1, padding=1),
+        #     nn.BatchNorm2d(hidden_dim // 2),
+        #     nn.ReLU(),
+        #     nn.Conv2d(in_channels=hidden_dim // 2, out_channels=hidden_dim // 2, kernel_size=1, stride=1),
+        #     nn.ReLU()
+        # )
+        # 商加
+        self.conv33conv33conv11 = nn.Sequential(
+            nn.BatchNorm2d(hidden_dim // 2),
+            # 商注销
+            nn.Conv2d(in_channels=hidden_dim // 2, out_channels=hidden_dim // 2, kernel_size=3, stride=1, padding=1),
+            # Pinwheel_shapedConv(c1=hidden_dim // 2, c2=hidden_dim // 2, k=3, s=1),
+            nn.BatchNorm2d(hidden_dim // 2),
+            nn.ReLU(),
+            # 商注销
+            nn.Conv2d(in_channels=hidden_dim // 2, out_channels=hidden_dim // 2, kernel_size=3, stride=1, padding=1),
+            # Pinwheel_shapedConv(c1=hidden_dim // 2, c2=hidden_dim // 2, k=3, s=1),
+            nn.BatchNorm2d(hidden_dim // 2),
+            nn.ReLU(),
+            # 商注销
+            nn.Conv2d(in_channels=hidden_dim // 2, out_channels=hidden_dim // 2, kernel_size=1, stride=1),
+            # Pinwheel_shapedConv(c1=hidden_dim // 2, c2=hidden_dim // 2, k=1, s=1),
+            nn.ReLU()
         )
+        # self.pconv = Pinwheel_shapedConv(c1=hidden_dim // 2, c2=hidden_dim // 2, k=3, s=1)
         # self.finalconv11 = nn.Conv2d(in_channels=hidden_dim, out_channels=hidden_dim, kernel_size=1, stride=1)
 
     def forward(self, input: torch.Tensor):
         input_left, input_right = input.chunk(2, dim=-1)
         x = self.drop_path(self.self_attention(self.ln_1(input_right)))
         input_left = input_left.permute(0, 3, 1, 2).contiguous()
-        # input_left = self.conv33conv33conv11(input_left)
-        input_left = self.cf_block(input_left)
+        # 商加
+        # input_left = self.pconv(input_left)
+        # 商注销
+        input_left = self.conv33conv33conv11(input_left)
+        # input_left = self.pconv(input_left)
         input_left = input_left.permute(0, 2, 3, 1).contiguous()
         output = torch.cat((input_left, x), dim=-1)
         output = channel_shuffle(output, groups=2)
@@ -763,8 +776,6 @@ class VSSM(nn.Module):
     def no_weight_decay_keywords(self):
         return {'relative_position_bias_table'}
 
-
-
     def forward_backbone(self, x):
         x = self.patch_embed(x)
         if self.ape:
@@ -783,20 +794,13 @@ class VSSM(nn.Module):
         x = self.head(x)
         return x
 
-    def forward_features(self, x):
-        """
-        提取中间特征用于可视化或其他下游任务（如 t-SNE）。
-        返回的是 avgpool 之前的高维表示。
-        """
-        x = self.forward_backbone(x)  # 输出为 (B, H, W, C)
-        x = x.permute(0, 3, 1, 2)  # 转为 (B, C, H, W)
-        x = self.avgpool(x)  # (B, C, 1, 1)
-        x = torch.flatten(x, start_dim=1)  # (B, C)
-        return x
-
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = VSSM(depths=[2, 2, 4, 2], dims=[96, 192, 384, 768], num_classes=6).to(device)
+    medmamba_t = VSSM(depths=[2, 2, 4, 2], dims=[96, 192, 384, 768], num_classes=6).to(device)
+    medmamba_s = VSSM(depths=[2, 2, 8, 2], dims=[96, 192, 384, 768], num_classes=6).to(device)
+    medmamba_b = VSSM(depths=[2, 2, 12, 2], dims=[128, 256, 512, 1024], num_classes=6).to(device)
+
     data = torch.randn(1, 3, 224, 224).to(device)
-    print(model(data).shape)
+
+    print(medmamba_t(data).shape)
