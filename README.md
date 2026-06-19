@@ -2,8 +2,6 @@
 
 TlMamba is the final release package for handwritten character recognition in ancient Tai palm-leaf manuscripts. It includes model code, a training entry point, an evaluation script, an architecture figure, and fixed experimental settings.
 
-The dataset and weight files are distributed separately via Baidu Netdisk and are not included in this GitHub repository.
-
 <p align="center">
   <img src="assets/Fig3_TlMamba_Model_Architecture.svg" alt="TlMamba model architecture" width="1100">
 </p>
@@ -37,8 +35,7 @@ TlMamba_release/
 |       `-- tlmamba_full_hldlc.json
 |-- test.py
 |-- requirements.txt
-|-- README.md
-`-- README_EN.md
+`-- README.md
 ```
 
 ## Environment Setup
@@ -55,8 +52,6 @@ pip install -r requirements.txt
 ## Dataset and Weights
 
 This project focuses on handwritten character recognition in ancient Tai palm-leaf manuscripts. The core dataset, `HLDLC1.0`, targets low-resource, long-tailed, and fine-grained character-confusion scenarios, and supports the main experiments, ablation studies, and long-tailed recognition comparisons in the paper.
-
-The GitHub repository does not include the dataset or weight archives. Download them from the Baidu Netdisk links below and prepare the files as follows:
 
 ```text
 extract the TlMamba checkpoint to weights/tlmamba_full_hldlc.pth
