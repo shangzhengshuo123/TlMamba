@@ -65,8 +65,8 @@ extract the HLDLC1.0 dataset to data/HLDLC1.0/
 
 | Type | Name | Target Directory | Download |
 | --- | --- | --- | --- |
-| Dataset | HLDLC1.0 | `data/HLDLC1.0/` | [Baidu Netdisk](https://pan.baidu.com/s/REPLACE_WITH_HLDLC_LINK) |
-| Weight | TlMamba checkpoint | `weights/` | [Baidu Netdisk](https://pan.baidu.com/s/REPLACE_WITH_TLMAMBA_WEIGHT_LINK) |
+| Dataset | HLDLC1.0.zip | `data/HLDLC1.0/` | [Baidu Netdisk](https://pan.baidu.com/s/1Lvm2s1NzC_5y52wuMv4Kmg?pwd=xp2r) `pwd: xp2r` |
+| Weight | TlMamba_HLDLC.zip | `weights/` | [Baidu Netdisk](https://pan.baidu.com/s/15ACFI6plxAeWxDq1xvJbDg?pwd=uj2s) `pwd: uj2s` |
 
 Basic information for HLDLC1.0:
 
